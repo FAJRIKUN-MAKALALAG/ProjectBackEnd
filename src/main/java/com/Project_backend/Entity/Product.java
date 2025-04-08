@@ -15,7 +15,11 @@ public class Product {
     @Column(unique = true)
     private String name;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String description;
+
+
     private double price;
 
     @Lob  // Menandakan bahwa ini adalah data besar (Large Object)

@@ -2,6 +2,8 @@ package com.Project_backend.Service;
 
 import com.Project_backend.Entity.User;
 import com.Project_backend.Repository.UserRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -14,12 +16,20 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public Object create(User user){
-        return userRepository.save(user);
+    public ResponseEntity<Object> create(User user){
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(userRepository.save(user));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
-    public Object getListData(){
-        return userRepository.findAll();
+    public ResponseEntity<Object> getListData(){
+        try{
+            return ResponseEntity.status(HttpStatus.OK).body(userRepository.findAll());
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     public Object getDataDetail(Long id){
@@ -36,4 +46,9 @@ public class UserService {
         // else throw error
         return null;
     }
+    /**
+     * todo
+     * buat method update di service
+     * buat endpoint di controller
+     * */
 }

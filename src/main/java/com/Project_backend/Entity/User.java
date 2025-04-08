@@ -15,4 +15,12 @@ public class User {
     private String name;
     private Integer age;
     private String email;
+    private String password;
+
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String imagesBase64;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private Biodata biodata;
 }

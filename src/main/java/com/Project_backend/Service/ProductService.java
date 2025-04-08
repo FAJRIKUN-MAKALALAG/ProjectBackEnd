@@ -37,4 +37,8 @@ public class ProductService {
         System.out.println("Data produk yang dikembalikan: " + products); // Debug log
         return products;
     }
+    public void delete(Long id) {
+        productRepository.deleteById(id);
+    }
+
 }

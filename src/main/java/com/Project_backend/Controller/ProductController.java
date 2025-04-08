@@ -38,4 +38,10 @@ public class ProductController {
     public ResponseEntity<List<Product>> listProduct() {
         return ResponseEntity.ok(productService.listProduct());
     }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
+        productService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
