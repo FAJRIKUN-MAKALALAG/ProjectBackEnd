@@ -2,6 +2,7 @@ package com.Project_backend.Controller;
 
 import com.Project_backend.Entity.User;
 import com.Project_backend.Service.UserService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,12 +16,12 @@ public class UserController {
 
 
     @PostMapping
-    public Object create(@RequestBody User user){
+    public ResponseEntity<Object> create(@RequestBody User user){
         return userService.create(user);
     }
 
     @GetMapping
-    public Object getListUser(){
+    public ResponseEntity<Object> getListUser(){
         return userService.getListData();
     }
 
