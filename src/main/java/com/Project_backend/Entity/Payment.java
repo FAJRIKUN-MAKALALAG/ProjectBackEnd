@@ -26,5 +26,15 @@ public class Payment {
 
     @Temporal(TemporalType.TIMESTAMP)
     private java.util.Date paymentDate;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;  // Pembayaran dilakukan oleh satu user
+
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    private Cart cart;  // Pembayaran untuk satu cart
+
+    private Double totalAmount;
 }
 

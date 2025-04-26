@@ -1,6 +1,7 @@
 package com.Project_backend.dto;
 
 import com.Project_backend.Entity.Product;
+import com.Project_backend.Entity.User;
 import lombok.Data;
 
 import java.util.Date;
@@ -10,16 +11,16 @@ public class OrderResponse {
     private Long id;
     private Date orderDate;
     private Double totalPrice;
-    private Long productId;
     private Date dateEstimation;
     private Integer quantity;
     private Product product;
-
-    public Object getTotalPrice() {
-        return (totalPrice % 1 == 0) ? totalPrice.intValue() : totalPrice;
-    }
+    private User user;
 
     public Long getProductId() {
         return (product != null) ? product.getId() : null;
+    }
+
+    public Object getTotalPrice() {
+        return (totalPrice != null && totalPrice % 1 == 0) ? totalPrice.intValue() : totalPrice;
     }
 }

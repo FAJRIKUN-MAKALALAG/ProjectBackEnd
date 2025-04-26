@@ -2,14 +2,17 @@ package com.Project_backend.Service;
 
 import com.Project_backend.Entity.Order;
 import com.Project_backend.Entity.Product;
+import com.Project_backend.Entity.User;
 import com.Project_backend.Repository.OrderRepository;
 import com.Project_backend.Repository.ProductRepository;
+import com.Project_backend.Repository.UserRepository;
 import com.Project_backend.dto.OrderResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,55 +22,54 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
 
     @Transactional
-    public ResponseEntity<?> createOrder(Order order) {
-        Optional<Product> productOpt = productRepository.findById(order.getProductId());
-
+    public ResponseEntity<?> createOrder(Order orderRequest) {
+        Optional<Product> productOpt = productRepository.findById(orderRequest.getProduct().getId());
         if (productOpt.isEmpty()) {
             return ResponseEntity.badRequest().body("Produk tidak ditemukan!");
         }
 
-        Product product = productOpt.get();
+        Optional<User> userOpt = userRepository.findById(orderRequest.getUser().getId());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("User tidak ditemukan!");
+        }
 
-        // Hitung total harga berdasarkan jumlah produk yang dipesan
-        order.setTotalPrice(product.getPrice() * order.getQuantity());
+        Product product = productOpt.get();
+        Order order = new Order();
+        order.setProduct(product);
+        order.setUser(userOpt.get());
+        order.setQuantity(orderRequest.getQuantity());
+        order.setDateEstimation(orderRequest.getDateEstimation());
+        order.setOrderDate(new Date());
+        order.setTotalPrice(product.getPrice() * orderRequest.getQuantity());
 
         Order savedOrder = orderRepository.save(order);
         return ResponseEntity.ok(savedOrder);
     }
 
-
     public ResponseEntity<?> getOrderDetail(Long id) {
         Optional<Order> orderOpt = orderRepository.findById(id);
-
         if (orderOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         Order order = orderOpt.get();
-        Optional<Product> productOpt = productRepository.findById(order.getProductId());
 
-        if (productOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("Produk tidak ditemukan untuk pesanan ini!");
-        }
+        OrderResponse response = new OrderResponse();
+        response.setId(order.getId());
+        response.setOrderDate(order.getOrderDate());
+        response.setQuantity(order.getQuantity());
+        response.setDateEstimation(order.getDateEstimation());
+        response.setTotalPrice(order.getTotalPrice());
+        response.setProduct(order.getProduct());
+        response.setUser(order.getUser());
 
-        Product product = productOpt.get();
-
-        OrderResponse orderResponse = new OrderResponse();
-        orderResponse.setId(order.getId());
-        orderResponse.setOrderDate(order.getOrderDate());
-        orderResponse.setQuantity(order.getQuantity());
-        orderResponse.setProduct(product);
-        orderResponse.setDateEstimation(order.getDateEstimation());
-        orderResponse.setTotalPrice(order.getTotalPrice());
-
-        return ResponseEntity.ok(orderResponse);
+        return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<List<Order>> listOrders() {
-        List<Order> orders = orderRepository.findAll();
-        return ResponseEntity.ok(orders);
+        return ResponseEntity.ok(orderRepository.findAll());
     }
-
 }

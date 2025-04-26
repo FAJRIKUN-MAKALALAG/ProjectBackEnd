@@ -46,9 +46,10 @@ public class UserService {
         // else throw error
         return null;
     }
-    /**
-     * todo
-     * buat method update di service
-     * buat endpoint di controller
-     * */
+    public User findByEmail(String email) {
+        Optional<User> user = userRepository.findByEmail(email);
+        return user.orElse(null); // Mengembalikan null jika user tidak ditemukan
+    }
+
+
 }

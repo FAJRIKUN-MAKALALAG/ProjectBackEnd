@@ -3,6 +3,8 @@ package com.Project_backend.Entity;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Entity
 @Table(name = "user")
@@ -18,9 +20,16 @@ public class User {
     private String password;
 
     @Lob
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT", nullable = true)
     private String imagesBase64;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Biodata biodata;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Cart> carts;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Payment> payments;
 }
+
