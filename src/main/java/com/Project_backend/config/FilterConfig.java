@@ -13,11 +13,15 @@ public class FilterConfig {
         FilterRegistrationBean<JwtRequestFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(new JwtRequestFilter());
 
-        // Tentukan URL yang harus diproteksi dengan JWT
-        registrationBean.addUrlPatterns("/order/*", "/payment/*", "/cart/*"); // Proteksi URL yang diinginkan
-
-        // Kecualikan URL yang tidak perlu melalui filter
-        registrationBean.addUrlPatterns("/user/create", "/auth/login");  // Kecualikan login dan pembuatan user
+        // Proteksi semua URL ini
+        registrationBean.addUrlPatterns(
+                "/order/*", "/payment/*", "/cart/*",
+                "/product/*",
+                "/product/create",
+                "/product/list",
+                "/product/update/*", // Tambah update
+                "/product/delete/*"  // Tambah delete
+        );
 
         return registrationBean;
     }

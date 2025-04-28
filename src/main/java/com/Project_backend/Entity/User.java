@@ -56,7 +56,7 @@ public class User {
     public User(String email, String password) {
         this.email = email;
         this.password = password;
-        this.role = Role.USER;  // Default role USER
+        this.role = role;  // Default role USER
         this.cart = new ArrayList<>();
         this.payment = new ArrayList<>();
     }

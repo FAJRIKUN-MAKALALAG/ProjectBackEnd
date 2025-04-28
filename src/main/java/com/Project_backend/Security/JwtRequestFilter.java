@@ -11,12 +11,15 @@ import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.io.IOException;
 
 @WebFilter("/*")  // Filter ini akan diterapkan pada semua URL
 public class JwtRequestFilter implements Filter {
 
-    private JwtUtil jwtUtil = new JwtUtil();
+    @Autowired  // Spring akan secara otomatis menyuntikkan JwtUtil
+    private JwtUtil jwtUtil;
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -24,11 +27,19 @@ public class JwtRequestFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         String requestURI = httpRequest.getRequestURI();
 
-        // Kecualikan /auth/login dan /user/create
-        if (requestURI.equals("/auth/login") || requestURI.equals("/user/create")) {
-            chain.doFilter(request, response);  // Lanjutkan ke filter berikutnya tanpa verifikasi token
+        // Kecualikan /auth/login, /auth/login_admin dan /user/create
+        if (requestURI.equals("/auth/login")
+                || requestURI.equals("/auth/login_admin")
+                || requestURI.equals("/user/create")
+                || requestURI.equals("/product/create")
+                || requestURI.equals("/product/list")
+                || requestURI.startsWith("/product/update")   // Tambah ini
+                || requestURI.startsWith("/product/delete")) { // Tambah ini
+            chain.doFilter(request, response);
             return;
         }
+
+
 
         String authHeader = httpRequest.getHeader("Authorization");
 
@@ -36,17 +47,12 @@ public class JwtRequestFilter implements Filter {
             String token = authHeader.substring(7); // Ambil token setelah "Bearer "
             String username = jwtUtil.extractUsername(token);
 
-            System.out.println("Token ditemukan: " + token);  // Log token untuk debug
-
             if (username != null && jwtUtil.validateToken(token, username)) {
-                System.out.println("Token valid untuk user: " + username);  // Log jika token valid
                 chain.doFilter(request, response);
             } else {
-                System.out.println("Token tidak valid untuk user: " + username);  // Log jika token tidak valid
                 ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
             }
         } else {
-            System.out.println("Authorization header tidak ditemukan");  // Log jika header tidak ada
             ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Authorization header missing");
         }
     }

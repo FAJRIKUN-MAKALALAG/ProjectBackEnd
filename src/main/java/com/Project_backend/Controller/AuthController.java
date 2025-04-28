@@ -4,6 +4,8 @@ import com.Project_backend.Entity.User;
 import com.Project_backend.Repository.UserRepository;
 import com.Project_backend.Util.JwtUtil;
 import com.Project_backend.dto.LoginRequest;
+import com.Project_backend.dto.LoginResponse;
+import com.Project_backend.dto.MessageResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +25,7 @@ public class AuthController {
         this.jwtUtil = jwtUtil;
     }
 
+    // Login untuk user biasa
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
@@ -31,33 +34,77 @@ public class AuthController {
                 User user = userOptional.get();
                 if (user.getPassword().equals(loginRequest.getPassword())) {
                     String token = jwtUtil.generateToken(user);
-                    return ResponseEntity.ok("Bearer " + token);
+
+                    // Balikin LoginResponse DTO supaya JSON rapi
+                    return ResponseEntity.ok(new LoginResponse(token));
                 } else {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Password salah");
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                            new MessageResponse("Password salah")
+                    );
                 }
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User tidak ditemukan");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        new MessageResponse("User tidak ditemukan")
+                );
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Terjadi kesalahan: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new MessageResponse("Terjadi kesalahan: " + e.getMessage())
+            );
         }
     }
 
+    // Login untuk admin
+    @PostMapping("/login_admin")
+    public ResponseEntity<?> loginAdmin(@RequestBody LoginRequest loginRequest) {
+        try {
+            Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+
+                // Pastikan hanya admin yang bisa login ke endpoint ini
+                if (user.getRole() != User.Role.ADMIN) {
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
+                            new MessageResponse("Hanya admin yang bisa login di sini")
+                    );
+                }
+
+                if (user.getPassword().equals(loginRequest.getPassword())) {
+                    String token = jwtUtil.generateToken(user);
+                    return ResponseEntity.ok(new LoginResponse(token));
+                } else {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                            new MessageResponse("Password salah")
+                    );
+                }
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        new MessageResponse("User tidak ditemukan")
+                );
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new MessageResponse("Terjadi kesalahan: " + e.getMessage())
+            );
+        }
+    }
+
+    // Validasi Token
     @GetMapping("/validate-token")
     public ResponseEntity<?> validateToken(@RequestParam String token, @RequestParam String email) {
         try {
-            // Validasi token untuk memastikan token yang diberikan valid dan belum expired
             boolean isValid = jwtUtil.validateToken(token, email);
-
             if (isValid) {
-                return ResponseEntity.ok("Token valid");
+                return ResponseEntity.ok(new MessageResponse("Token valid"));
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Token tidak valid atau expired");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                        new MessageResponse("Token tidak valid atau expired")
+                );
             }
         } catch (Exception e) {
-            // Tangani error yang mungkin terjadi, misalnya token rusak atau kesalahan lainnya
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Terjadi kesalahan saat memvalidasi token: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    new MessageResponse("Terjadi kesalahan saat memvalidasi token: " + e.getMessage())
+            );
         }
     }
-
 }

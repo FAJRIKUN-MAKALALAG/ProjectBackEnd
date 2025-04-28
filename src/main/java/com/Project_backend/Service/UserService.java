@@ -38,11 +38,9 @@ public class UserService {
             if (user.getAge() == null || user.getAge() <= 0) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Umur harus diisi dan lebih dari 0");
             }
-
             if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email tidak boleh kosong");
             }
-
             if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Password tidak boleh kosong");
             }
@@ -59,6 +57,7 @@ public class UserService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saat membuat user: " + e.getMessage());
         }
     }
+
 
 
 
@@ -84,6 +83,7 @@ public class UserService {
         }
     }
 
+
     // Mengambil daftar user
     public ResponseEntity<Object> getListData() {
         try {
@@ -93,26 +93,29 @@ public class UserService {
         }
     }
 
+
     // Mengambil detail user berdasarkan ID
     public ResponseEntity<Object> getDataDetail(Long id) {
         Optional<User> userOptional = userRepository.findById(id);
         if (userOptional.isPresent()) {
             return ResponseEntity.status(HttpStatus.OK).body(userOptional.get());
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User tidak ditemukan");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User dengan ID " + id + " tidak ditemukan");
         }
     }
+
 
     // Menghapus user berdasarkan ID
     public ResponseEntity<Object> delete(Long id) {
         Optional<User> userOptional = userRepository.findById(id);
         if (userOptional.isPresent()) {
             userRepository.delete(userOptional.get());
-            return ResponseEntity.status(HttpStatus.OK).body("User berhasil dihapus");
+            return ResponseEntity.status(HttpStatus.OK).body("User dengan ID " + id + " berhasil dihapus");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User tidak ditemukan");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User dengan ID " + id + " tidak ditemukan");
         }
     }
+
 
     // Memperbarui data user berdasarkan ID
     public ResponseEntity<Object> update(Long id, User userUpdate) {
@@ -124,13 +127,14 @@ public class UserService {
 
             // Update password jika ada
             if (userUpdate.getPassword() != null && !userUpdate.getPassword().isEmpty()) {
-                user.setPassword(userUpdate.getPassword()); // Tidak enkripsi karena ini contoh tanpa Spring Security
+                user.setPassword(userUpdate.getPassword());  // Tidak enkripsi karena ini contoh tanpa Spring Security
             }
 
             userRepository.save(user);
-            return ResponseEntity.status(HttpStatus.OK).body("User berhasil diperbarui");
+            return ResponseEntity.status(HttpStatus.OK).body("User dengan ID " + id + " berhasil diperbarui");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User tidak ditemukan");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User dengan ID " + id + " tidak ditemukan");
         }
     }
+
 }

@@ -4,44 +4,52 @@ import com.Project_backend.Entity.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    @Value("mysecretkey")  // Kamu bisa menghapus ini, karena kita akan menggunakan Keys.secretKeyFor
-    private String secretKey;
+    private SecretKey secretKey;
+
+    @PostConstruct
+    public void init() {
+        try {
+            // Menggunakan KeyGenerator untuk membuat secret key secara otomatis
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
+            keyGenerator.init(256);  // Ukuran kunci dalam bit
+            secretKey = keyGenerator.generateKey();
+        } catch (Exception e) {
+            System.out.println("Error generating secret key, using default key.");
+            secretKey = Keys.hmacShaKeyFor("defaultsecretkey".getBytes());  // Fallback key jika gagal
+        }
+    }
 
     // Generate JWT Token
     public String generateToken(User user) {
-        // Gunakan Keys.secretKeyFor untuk menghasilkan kunci yang aman untuk HS256
-        SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-
         return Jwts.builder()
-                .setSubject(user.getEmail()) // Menyimpan email sebagai subject dalam JWT
-                .setIssuedAt(new Date())
+                .setSubject(user.getEmail())  // Menyimpan email dalam JWT
+                .setIssuedAt(new Date())  // Waktu pembuatan token
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60))  // Token berlaku 1 jam
-                .signWith(key)  // Menggunakan kunci yang dihasilkan oleh Keys.secretKeyFor
+                .signWith(secretKey, SignatureAlgorithm.HS256)  // Menandatangani token dengan secret key
                 .compact();
     }
 
-    // Extract username (email) dari token
+    // Extract username (email) from JWT token
     public String extractUsername(String token) {
-        SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-
         return Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
-                .getSubject();
+                .getSubject();  // Mendapatkan email dari JWT
     }
 
-    // Validasi token
+    // Validate token against username and check if it's expired
     public boolean validateToken(String token, String username) {
         String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
@@ -49,10 +57,8 @@ public class JwtUtil {
 
     // Cek apakah token sudah expired
     private boolean isTokenExpired(String token) {
-        SecretKey key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-
         Date expiration = Jwts.parserBuilder()
-                .setSigningKey(key)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
