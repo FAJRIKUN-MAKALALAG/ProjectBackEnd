@@ -15,12 +15,14 @@ public class FilterConfig {
 
         // Proteksi semua URL ini
         registrationBean.addUrlPatterns(
-                "/order/*", "/payment/*", "/cart/*",
+                "/order/*", "/payment/*",
                 "/product/*",
                 "/product/create",
                 "/product/list",
                 "/product/update/*", // Tambah update
-                "/product/delete/*"  // Tambah delete
+                "/product/delete/*",
+                "/cart/{userId}",
+                "/cart/add"
         );
 
         return registrationBean;

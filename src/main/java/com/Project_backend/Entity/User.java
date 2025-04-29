@@ -3,6 +3,7 @@ package com.Project_backend.Entity;
 import com.Project_backend.Entity.Biodata;
 import com.Project_backend.Entity.Cart;
 import com.Project_backend.Entity.Payment;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.Data;
@@ -36,7 +37,9 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Biodata biodata;
 
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Cart> cart;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

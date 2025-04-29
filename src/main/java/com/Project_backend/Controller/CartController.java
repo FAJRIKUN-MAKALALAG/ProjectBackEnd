@@ -14,12 +14,27 @@ import java.util.List;
 public class CartController {
     private final CartService cartService;
 
-    @PostMapping
+    @PostMapping("/add")
     public ResponseEntity<Cart> addToCart(@RequestBody Cart cart) {
+        // Debug logging untuk memeriksa payload
+        System.out.println(">>> Received Cart Payload:");
+        if (cart.getUser() == null) {
+            System.out.println("    user: NULL");
+        } else {
+            System.out.println("    user.id: " + cart.getUser().getId());
+        }
+        if (cart.getProduct() == null) {
+            System.out.println("    product: NULL");
+        } else {
+            System.out.println("    product.id: " + cart.getProduct().getId());
+        }
+        System.out.println("    quantity: " + cart.getQuantity());
+
         return cartService.addToCart(cart);
     }
 
-    @GetMapping("/{userId}")
+
+    @GetMapping("/user/{userId}")
     public ResponseEntity<List<Cart>> getUserCart(@PathVariable Long userId) {
         return cartService.getUserCart(userId);
     }

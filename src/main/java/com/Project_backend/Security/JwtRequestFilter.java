@@ -34,7 +34,9 @@ public class JwtRequestFilter implements Filter {
                 || requestURI.equals("/product/create")
                 || requestURI.equals("/product/list")
                 || requestURI.startsWith("/product/update")   // Tambah ini
-                || requestURI.startsWith("/product/delete")) { // Tambah ini
+                || requestURI.startsWith("/product/delete")
+                || requestURI.startsWith("/cart/user/{userId}")
+                || requestURI.startsWith("/cart/add")){ // Tambah ini
             chain.doFilter(request, response);
             return;
         }

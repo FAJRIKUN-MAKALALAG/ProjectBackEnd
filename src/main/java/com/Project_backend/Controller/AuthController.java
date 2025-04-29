@@ -30,27 +30,23 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
             Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                if (user.getPassword().equals(loginRequest.getPassword())) {
-                    String token = jwtUtil.generateToken(user);
-
-                    // Balikin LoginResponse DTO supaya JSON rapi
-                    return ResponseEntity.ok(new LoginResponse(token));
-                } else {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                            new MessageResponse("Password salah")
-                    );
-                }
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        new MessageResponse("User tidak ditemukan")
-                );
+            if (userOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new MessageResponse("User tidak ditemukan"));
             }
+            User user = userOptional.get();
+            if (!user.getPassword().equals(loginRequest.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new MessageResponse("Password salah"));
+            }
+
+            String token = jwtUtil.generateToken(user);
+            // kirim token + userId
+            return ResponseEntity.ok(new LoginResponse(token, user.getId()));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    new MessageResponse("Terjadi kesalahan: " + e.getMessage())
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Terjadi kesalahan: " + e.getMessage()));
         }
     }
 
@@ -59,33 +55,27 @@ public class AuthController {
     public ResponseEntity<?> loginAdmin(@RequestBody LoginRequest loginRequest) {
         try {
             Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-
-                // Pastikan hanya admin yang bisa login ke endpoint ini
-                if (user.getRole() != User.Role.ADMIN) {
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(
-                            new MessageResponse("Hanya admin yang bisa login di sini")
-                    );
-                }
-
-                if (user.getPassword().equals(loginRequest.getPassword())) {
-                    String token = jwtUtil.generateToken(user);
-                    return ResponseEntity.ok(new LoginResponse(token));
-                } else {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
-                            new MessageResponse("Password salah")
-                    );
-                }
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-                        new MessageResponse("User tidak ditemukan")
-                );
+            if (userOptional.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new MessageResponse("User tidak ditemukan"));
             }
+            User user = userOptional.get();
+            if (user.getRole() != User.Role.ADMIN) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(new MessageResponse("Hanya admin yang bisa login di sini"));
+            }
+            if (!user.getPassword().equals(loginRequest.getPassword())) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new MessageResponse("Password salah"));
+            }
+
+            String token = jwtUtil.generateToken(user);
+            // kirim token + adminId
+            return ResponseEntity.ok(new LoginResponse(token, user.getId()));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    new MessageResponse("Terjadi kesalahan: " + e.getMessage())
-            );
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("Terjadi kesalahan: " + e.getMessage()));
         }
     }
 
