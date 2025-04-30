@@ -2,12 +2,12 @@ package com.Project_backend.Entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity
-@Table(name = "orders") // pakai "orders" biar gak konflik dengan SQL keyword
+@Table(name = "orders")
 public class Order {
 
     @Id
@@ -16,7 +16,7 @@ public class Order {
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, updatable = false)
-    private Date orderDate = new Date();  // Otomatis saat objek dibuat
+    private Date orderDate = new Date();
 
     @Column(nullable = false)
     private Double totalPrice;
@@ -27,17 +27,16 @@ public class Order {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateEstimation;
 
-    // Relasi ke Product
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status = OrderStatus.PENDING;
 
-    // Relasi ke User (biar kita tahu siapa yang order)
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // Optional: jika ingin punya akses langsung ke payment
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    private List<OrderProduct> orderProducts;
+
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     private Payment payment;
 }

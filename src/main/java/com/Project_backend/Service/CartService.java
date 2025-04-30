@@ -23,29 +23,51 @@ public class CartService {
 
     public ResponseEntity<Cart> addToCart(Cart cart) {
         try {
-            // Validasi apakah user dan produk ada
+            // Validasi user dan produk
             Optional<Product> productOptional = productRepository.findById(cart.getProduct().getId());
             Optional<User> userOptional = userRepository.findById(cart.getUser().getId());
 
-            if (productOptional.isEmpty()) {
-                return ResponseEntity.badRequest().body(null);  // Produk tidak ditemukan
-            }
-            if (userOptional.isEmpty()) {
-                return ResponseEntity.badRequest().body(null);  // User tidak ditemukan
+            if (productOptional.isEmpty() || userOptional.isEmpty()) {
+                return ResponseEntity.badRequest().body(null);
             }
 
-            cart.setProduct(productOptional.get());
-            cart.setUser(userOptional.get());
+            if (cart.getQuantity() == null || cart.getQuantity() <= 0) {
+                return ResponseEntity.badRequest().body(null);
+            }
 
+            Product product = productOptional.get();
+            User user = userOptional.get();
+
+            // Cek apakah produk sudah ada di cart user
+            Optional<Cart> existingCart = cartRepository.findByUserIdAndProductId(user.getId(), product.getId());
+            if (existingCart.isPresent()) {
+                Cart updatedCart = existingCart.get();
+                updatedCart.setQuantity(updatedCart.getQuantity() + cart.getQuantity());
+                return ResponseEntity.ok(cartRepository.save(updatedCart));
+            }
+
+            // Jika belum ada, tambahkan produk baru ke cart
+            cart.setProduct(product);
+            cart.setUser(user);
             return ResponseEntity.ok(cartRepository.save(cart));
+
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.internalServerError().body(null);
         }
     }
 
     public ResponseEntity<List<Cart>> getUserCart(Long userId) {
-        return ResponseEntity.ok(cartRepository.findByUserId(userId));
+        List<Cart> carts = cartRepository.findByUserId(userId);
+        // Pastikan produk dan pengguna di-load
+        for (Cart cart : carts) {
+            cart.getProduct().getName(); // Memastikan produk dimuat
+            cart.getProduct().getImageBase64(); // Memastikan gambar dimuat
+            cart.getProduct().getPrice(); // Memastikan harga dimuat
+        }
+        return ResponseEntity.ok(carts);
     }
+
 
     public ResponseEntity<Void> removeFromCart(Long cartId) {
         if (cartRepository.existsById(cartId)) {
@@ -57,6 +79,10 @@ public class CartService {
     }
 
     public ResponseEntity<Cart> updateCartQuantity(Long cartId, Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+
         Optional<Cart> cartOptional = cartRepository.findById(cartId);
         if (cartOptional.isPresent()) {
             Cart cart = cartOptional.get();

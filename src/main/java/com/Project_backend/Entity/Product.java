@@ -39,7 +39,7 @@ public class Product {
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference(value = "product-cart")
-    private List<Cart> cartList = new ArrayList<>();  // Penting: inisialisasi list-nya agar tidak null
+    @OneToMany(mappedBy = "product")
+    private List<OrderProduct> orderProducts; // Relasi ManyToMany dengan Order melalui OrderProduct
 }
+

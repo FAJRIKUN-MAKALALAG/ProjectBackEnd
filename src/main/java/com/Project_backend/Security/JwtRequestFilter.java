@@ -15,10 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 
-@WebFilter("/*")  // Filter ini akan diterapkan pada semua URL
+@WebFilter("/*")
 public class JwtRequestFilter implements Filter {
 
-    @Autowired  // Spring akan secara otomatis menyuntikkan JwtUtil
+    @Autowired
     private JwtUtil jwtUtil;
 
     @Override
@@ -27,30 +27,32 @@ public class JwtRequestFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         String requestURI = httpRequest.getRequestURI();
 
-        // Kecualikan /auth/login, /auth/login_admin dan /user/create
+        // Kecualikan URL yang tidak memerlukan token (sesuaikan URL sesuai kebutuhan)
         if (requestURI.equals("/auth/login")
                 || requestURI.equals("/auth/login_admin")
                 || requestURI.equals("/user/create")
                 || requestURI.equals("/product/create")
                 || requestURI.equals("/product/list")
-                || requestURI.startsWith("/product/update")   // Tambah ini
+                || requestURI.startsWith("/product/update")
                 || requestURI.startsWith("/product/delete")
-                || requestURI.startsWith("/cart/user/{userId}")
-                || requestURI.startsWith("/cart/add")){ // Tambah ini
-            chain.doFilter(request, response);
+                || requestURI.startsWith("/cart/")
+                || requestURI.startsWith("/order/") // Menangani URL /order/{userId} dan /order/detail/{id}
+                || requestURI.startsWith("/payment/")
+        ) {
+            chain.doFilter(request, response);  // Jika tidak memerlukan token, lewati filter
             return;
         }
 
-
-
+        // Ambil token dari header Authorization
         String authHeader = httpRequest.getHeader("Authorization");
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7); // Ambil token setelah "Bearer "
             String username = jwtUtil.extractUsername(token);
 
+            // Validasi token
             if (username != null && jwtUtil.validateToken(token, username)) {
-                chain.doFilter(request, response);
+                chain.doFilter(request, response);  // Token valid, lanjutkan filter
             } else {
                 ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token");
             }
@@ -61,11 +63,12 @@ public class JwtRequestFilter implements Filter {
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        // Tidak perlu implementasi jika tidak ada konfigurasi filter khusus
+        // Tidak ada konfigurasi khusus yang diperlukan
     }
 
     @Override
     public void destroy() {
-        // Tidak perlu implementasi jika tidak ada resource yang perlu dihancurkan
+        // Tidak ada resource yang perlu dihancurkan
     }
 }
+

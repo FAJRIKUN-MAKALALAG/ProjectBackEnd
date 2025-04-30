@@ -15,7 +15,14 @@ public class FilterConfig {
 
         // Proteksi semua URL ini
         registrationBean.addUrlPatterns(
-                "/order/*", "/payment/*",
+                "/order/*", "/payment/*", // Menambahkan proteksi untuk order dan payment
+                "/order/{userId}",  // Endpoint untuk membuat order
+                "/order/detail/*",  // Endpoint untuk melihat detail order
+                "/order/list", // Endpoint untuk melihat riwayat order
+                "/payment/create/{orderId}",
+                "/payment/checkout/{userId}",
+                "/payment/{orderId}",  // Endpoint untuk melihat detail payment berdasarkan orderId
+                "/payment/{orderId}/status", // Endpoint untuk memperbarui status payment
                 "/product/*",
                 "/product/create",
                 "/product/list",

@@ -15,11 +15,11 @@ public class Cart {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference(value = "user-cart")  // Tambahkan value supaya jelas
+    @JsonBackReference(value = "user-cart")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id")
     @JsonBackReference(value = "product-cart")
     private Product product;
 
