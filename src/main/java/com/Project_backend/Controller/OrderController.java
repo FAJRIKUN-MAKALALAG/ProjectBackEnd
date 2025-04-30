@@ -1,31 +1,40 @@
 package com.Project_backend.Controller;
 
-import com.Project_backend.Entity.Order;
 import com.Project_backend.Service.OrderService;
+import com.Project_backend.dto.OrderRequestDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
-@RequiredArgsConstructor
 @RestController
 @RequestMapping("/order")
+@RequiredArgsConstructor
 public class OrderController {
+
     private final OrderService orderService;
 
-    @PostMapping("/create")
-    public ResponseEntity<?> createOrder(@RequestBody Order order) {
-        return orderService.createOrder(order);
+    // Buat order dari cart
+    @PostMapping("/{userId}")
+    public ResponseEntity<?> createOrder(@PathVariable Long userId,
+                                         @RequestBody OrderRequestDto orderRequestDto) {
+        return orderService.createOrder(userId, orderRequestDto);
     }
 
-    @GetMapping("/detail/{id}")
-    public ResponseEntity<?> getOrderDetail(@PathVariable("id") Long id) {
-        return orderService.getOrderDetail(id);
-    }
-
-    @GetMapping("/list")
-    public ResponseEntity<List<Order>> getAllOrders() {
+    // Ambil semua order
+    @GetMapping
+    public ResponseEntity<?> listOrders() {
         return orderService.listOrders();
+    }
+
+    // Ambil detail order berdasarkan ID
+    @GetMapping("/{orderId}")
+    public ResponseEntity<?> getOrderDetail(@PathVariable Long orderId) {
+        return orderService.getOrderDetail(orderId);
+    }
+
+    // Ambil semua order milik user
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getOrdersByUser(@PathVariable Long userId) {
+        return orderService.getOrdersByUser(userId);
     }
 }

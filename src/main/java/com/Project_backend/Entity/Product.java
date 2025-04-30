@@ -1,7 +1,11 @@
 package com.Project_backend.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Entity
@@ -19,10 +23,23 @@ public class Product {
     @Column(columnDefinition = "LONGTEXT")
     private String description;
 
-
     private double price;
 
-    @Lob  // Menandakan bahwa ini adalah data besar (Large Object)
-    @Column(columnDefinition = "LONGTEXT") // Menggunakan tipe data TEXT untuk menyimpan Base64
+    private Integer stock;
+
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
     private String imageBase64;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
+
+    @OneToMany(mappedBy = "product")
+    private List<OrderProduct> orderProducts; // Relasi ManyToMany dengan Order melalui OrderProduct
 }
+
