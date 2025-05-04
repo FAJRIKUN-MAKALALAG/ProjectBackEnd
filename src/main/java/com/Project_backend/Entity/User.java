@@ -41,17 +41,12 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Payment> payment = new ArrayList<>();
 
-    public User(String name, String email, String password) {
+    public User(String name, Integer age, String email, String password, Role role) {
         this.name = name;
+        this.age = age;
         this.email = email;
         this.password = password;
-        this.role = Role.USER;
-    }
-
-    public User(String email, String password) {
-        this.email = email;
-        this.password = password;
-        this.role = Role.USER;
+        this.role = role; // Tidak dipaksa USER, bisa ADMIN juga
     }
 
     public enum Role {
